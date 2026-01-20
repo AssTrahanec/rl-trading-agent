@@ -1,0 +1,67 @@
+name: Run RL Training
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'colab_notebooks/rl_training.ipynb'
+  workflow_dispatch:  # Позволяет запускать вручную
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        pip install jupyter nbconvert
+        pip install stable-baselines3[extra] gymnasium transformers yfinance ccxt ta plotly
+
+    - name: Run notebook
+      run: |
+        jupyter nbconvert --to notebook --execute colab_notebooks/rl_training.ipynb --output executed_notebook.ipynb
+        jupyter nbconvert --to html colab_notebooks/executed_notebook.ipynb --output results.html
+
+    - name: Extract results
+      run: |
+        # Извлекаем результаты из executed notebook
+        python -c "
+import json
+with open('colab_notebooks/executed_notebook.ipynb', 'r') as f:
+    nb = json.load(f)
+
+results = []
+for cell in nb['cells']:
+    if cell['cell_type'] == 'code' and 'outputs' in cell:
+        for output in cell['outputs']:
+            if 'text' in output:
+                text = ''.join(output['text'])
+                if 'CLAUDE_RESULTS_START' in text:
+                    results.append(text)
+
+with open('results.txt', 'w') as f:
+    f.write('\n'.join(results))
+"
+
+    - name: Upload results as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: training-results
+        path: |
+          results.txt
+          colab_notebooks/results.html
+          colab_notebooks/trading_results.png
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./colab_notebooks
+        publish_branch: gh-pages
