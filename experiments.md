@@ -78,14 +78,78 @@
 
 ### Результаты
 
+| Experiment | Return | vs Buy&Hold | Sharpe | Drawdown | Win Rate | Trades |
+|------------|--------|-------------|--------|----------|----------|--------|
+| **norm_100k** | **+187.20%** | **+115.76%** | 2.59 | -9.68% | 35.56% | 222 |
+| norm_high_ent | +155.84% | +84.41% | **2.75** | **-7.40%** | **41.87%** | 179 |
+| normalized_obs (baseline) | +118.92% | +47.49% | 2.31 | -8.11% | 35.06% | 229 |
+| norm_with_penalty | +109.49% | +38.06% | 2.38 | -8.33% | 36.36% | 187 |
+| norm_100k_low_lr | +102.23% | +30.80% | 1.89 | -9.88% | 38.54% | 223 |
+| norm_low_lr | +89.19% | +17.76% | 1.78 | -11.65% | 35.29% | 229 |
+
+**Buy & Hold baseline:** +71.43%
+
+### Анализ
+
+#### Ключевые находки:
+
+1. **Больше timesteps = значительно лучше** ✅
+   - norm_100k (+187%) vs baseline (+118%) = +69% improvement
+   - Гипотеза подтверждена
+
+2. **Высокий entropy улучшает качество, но не return** ✅
+   - norm_high_ent: лучший Sharpe (2.75) и лучший Win Rate (41.87%)
+   - Но return ниже чем у norm_100k
+   - Больше exploration → более стабильная стратегия
+
+3. **Низкий learning rate = ХУЖЕ** ❌
+   - norm_low_lr (+89%) vs baseline (+118%) = -29% regression
+   - norm_100k_low_lr (+102%) vs norm_100k (+187%) = -85% regression
+   - Гипотеза отвергнута! Меньший LR не помогает
+
+4. **Transaction penalty незначительно влияет**
+   - norm_with_penalty (+109%) близко к baseline (+118%)
+   - Не улучшает и не сильно портит
+
+#### Что работает:
+- ✅ Больше timesteps (100K >> 50K)
+- ✅ Высокий entropy (0.05) для лучшего Sharpe/Win Rate
+- ✅ Стандартный learning rate (3e-4)
+
+#### Что не работает:
+- ❌ Низкий learning rate (1e-4) - ухудшает результаты
+- ⚠️ Transaction penalty - нейтральный эффект
+
+---
+
+## Experiment Run #3 (Scaling Up)
+
+**Дата:** 2025-01-21
+**Цель:** Комбинировать лучшие находки и масштабировать
+**Гипотезы:**
+1. 100K + high entropy = лучшее из обоих миров (return + Sharpe)
+2. 200K timesteps = еще лучше чем 100K
+3. Более высокий LR (5e-4) может ускорить сходимость
+
+### Новые конфигурации
+
+| Experiment | Базируется на | Изменения |
+|------------|---------------|-----------|
+| combo_best | norm_100k | +entropy_coef: 0.05 (100K + high entropy) |
+| steps_200k | norm_100k | timesteps: 100K → 200K |
+| high_lr | normalized_obs | learning_rate: 3e-4 → 5e-4 |
+| steps_200k_ent | steps_200k | +entropy_coef: 0.05 (максимум) |
+
+### Результаты
+
 *Ожидают запуска...*
 
 | Experiment | Return | vs Buy&Hold | Sharpe | Drawdown | Win Rate | Trades |
 |------------|--------|-------------|--------|----------|----------|--------|
-| norm_100k | - | - | - | - | - | - |
-| norm_low_lr | - | - | - | - | - | - |
-| norm_high_ent | - | - | - | - | - | - |
-| norm_with_penalty | - | - | - | - | - | - |
+| combo_best | - | - | - | - | - | - |
+| steps_200k | - | - | - | - | - | - |
+| high_lr | - | - | - | - | - | - |
+| steps_200k_ent | - | - | - | - | - | - |
 
 ### Анализ
 
@@ -98,7 +162,8 @@
 | Run | Best Experiment | Return | Sharpe | Drawdown | Key Finding |
 |-----|-----------------|--------|--------|----------|-------------|
 | #1 | normalized_obs | +123.65% | 2.35 | -8.66% | Нормализация критична |
-| #2 | TBD | - | - | - | - |
+| #2 | norm_100k | +187.20% | 2.59 | -9.68% | Больше timesteps = лучше |
+| #3 | TBD | - | - | - | - |
 
 ---
 
