@@ -202,6 +202,60 @@
 
 ---
 
+## Milestone 2: Real Market Data (IN PROGRESS)
+
+**Дата начала:** 2025-01-21
+**Цель:** Проверить combo_best на реальных данных
+
+### Критерии успеха:
+- [ ] Outperformance > 3% на реальных данных
+- [ ] Воспроизводимость на разных тикерах
+- [ ] Агент не переобучается (train ~ test)
+
+### Поддерживаемые источники данных:
+
+| Источник | Библиотека | Примеры |
+|----------|------------|---------|
+| **Stocks** | yfinance | AAPL, TSLA, MSFT, SPY, QQQ |
+| **Crypto** | ccxt/Binance | BTC/USDT, ETH/USDT, SOL/USDT |
+| **Synthetic** | numpy | Для baseline сравнения |
+
+### Эксперименты:
+
+| Run | Data Source | Ticker | Best Result | Status |
+|-----|-------------|--------|-------------|--------|
+| M2-1 | stock | AAPL | *pending* | 🔄 |
+| M2-2 | stock | TSLA | *pending* | ⏳ |
+| M2-3 | stock | SPY | *pending* | ⏳ |
+| M2-4 | crypto | BTC/USDT | *pending* | ⏳ |
+| M2-5 | crypto | ETH/USDT | *pending* | ⏳ |
+
+### Конфигурация (combo_best из M1):
+
+```python
+DATA_SOURCE = "stock"  # or "crypto"
+DATA_CONFIG = {
+    "stock": {"ticker": "AAPL", "period": "2y"},
+    "crypto": {"symbol": "BTC/USDT", "exchange": "binance", "limit": 500},
+}
+
+# Best config from Milestone 1
+EXPERIMENTS = {
+    "combo_best": {
+        "normalize_obs": True,
+        "entropy_coef": 0.05,
+        "timesteps": 100000,
+        "learning_rate": 3e-4,
+    }
+}
+```
+
+### Результаты:
+
+*Ожидают запуска...*
+
+---
+
 ## Summary Table (All Runs)
 
 | Run | Best Experiment | Return | Sharpe | Drawdown | Key Finding |
